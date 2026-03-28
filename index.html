@@ -7922,7 +7922,7 @@ function addStatMinutes(type, minsToAdd) {
         // ✨ نظام المساعد الذكي (Gemini Chat) ✨
         // =========================================
         
-        // ⚠️ ضع مفتاح الـ API الجديد الخاص بك هنا ⚠️
+        // ⚠️ ضع مفتاح الـ API الخاص بك هنا ⚠️
         const GEMINI_API_KEY = "AIzaSyAhOrf4xAg4O3KNZY0OSFzCnjymNJIvIus"; 
         
         let isAITyping = false;
@@ -7983,7 +7983,8 @@ function addStatMinutes(type, minsToAdd) {
                 }
             } catch (error) {
                 console.error("Gemini Error:", error);
-                document.getElementById(loadingId).remove();
+                const loader = document.getElementById(loadingId);
+                if (loader) loader.remove();
                 
                 if(error.message === "API_KEY_MISSING") {
                     addChatBubble("نسيت تخلي مفتاح الـ API بالكود! 🔑 يرجى وضعه في المتغير GEMINI_API_KEY.", 'ai');
@@ -7993,6 +7994,49 @@ function addStatMinutes(type, minsToAdd) {
             }
             
             isAITyping = false;
+        }
+
+        // ✨ هذي الدالة اللي چانت ضايعة ✨
+        function addChatBubble(text, sender, id = null) {
+            const chatMessages = document.getElementById('chatMessages');
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${sender}-bubble`;
+            if (id) bubble.id = id;
+
+            const icon = sender === 'user' ? '👤' : '🤖';
+            
+            bubble.innerHTML = `
+                <div class="bubble-icon">${icon}</div>
+                <div class="bubble-text">${text}</div>
+            `;
+            
+            chatMessages.appendChild(bubble);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // النزول للأسفل تلقائياً
+            
+            // صوت خفيف عند وصول رد من الذكاء الاصطناعي
+            if (sender === 'ai' && isSoundEnabled && !id) {
+                const pop = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+                pop.volume = 0.2;
+                pop.play().catch(e=>{});
+            }
+        }
+
+        // الإرسال عند الضغط على Enter (بدون Shift)
+        const aiInput = document.getElementById('aiChatInput');
+        if (aiInput) {
+            aiInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendAIMessage();
+                }
+            });
+
+            // تمدد حقل الكتابة تلقائياً عند كتابة رسالة طويلة
+            aiInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if (this.value === '') this.style.height = 'auto';
+            });
         }
         
         // =========================================
